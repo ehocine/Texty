@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "1068044356299",
+    "project_id": "texty-af0dd",
+    "storage_bucket": "texty-af0dd.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1068044356299:android:bf57361f8a3b599d0d694e",
+        "android_client_info": {
+          "package_name": "com.hocel.texty"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "1068044356299-d7cv1ketcgqfqdth93furidenc7ik9at.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDPRbDEDQw0UNIwcpWblplYVYzBvPOLUok"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1068044356299-d7cv1ketcgqfqdth93furidenc7ik9at.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
