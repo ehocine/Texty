@@ -6,4 +6,5 @@ data class ScannedText(
     val text: String = "",
     var imageUri: String = "",
     val scannedTime: Long = System.currentTimeMillis(),
+    val textLanguage: String = ""
 )

@@ -3,6 +3,7 @@ package com.hocel.texty.viewmodels
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ModalBottomSheetState
@@ -17,6 +18,7 @@ import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
+import com.google.mlkit.nl.languageid.LanguageIdentification
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
@@ -64,12 +66,13 @@ class MainViewModel @Inject constructor(
     private var _userInfo: MutableStateFlow<User> = MutableStateFlow(User())
     var userInfo = _userInfo.asStateFlow()
 
-    private var imageRotation = 0
+    private var _textLanguage: MutableState<String> = mutableStateOf("")
+    var textLanguage: State<String> = _textLanguage
 
     private var _gettingData = MutableStateFlow(LoadingState.IDLE)
     var gettingData: StateFlow<LoadingState> = _gettingData
 
-    fun processImage(gotText: (text: String) -> Unit) {
+    fun processImage(gotTextAndLanguage: (text: String) -> Unit) {
         viewModelScope.launch {
             try {
                 _scanningStatus.emit(ScanningStatus.LOADING)
@@ -84,13 +87,20 @@ class MainViewModel @Inject constructor(
                     .addOnSuccessListener { visionText ->
                         val resultText = visionText.text
                         if (resultText.isNotEmpty()) {
-                            gotText(resultText)
+                            CoroutineScope(Dispatchers.IO).launch {
+                                identifyLanguage(resultText){
+                                    gotTextAndLanguage(resultText)
+                                }
+                                _scanningStatus.emit(ScanningStatus.LOADED)
+                            }
                         }
                     }
                     .addOnFailureListener { e ->
                         e.printStackTrace()
+                        CoroutineScope(Dispatchers.IO).launch {
+                            _scanningStatus.emit(ScanningStatus.ERROR)
+                        }
                     }
-                _scanningStatus.emit(ScanningStatus.LOADED)
             } catch (e: IOException) {
                 _scanningStatus.emit(ScanningStatus.ERROR)
                 e.printStackTrace()
@@ -211,5 +221,21 @@ class MainViewModel @Inject constructor(
             inputStream?.close()
         }
         return 0
+    }
+
+    private fun identifyLanguage(text: String, gotLanguage: () -> Unit) {
+        val languageIdentifier = LanguageIdentification.getClient()
+        languageIdentifier.identifyLanguage(text)
+            .addOnSuccessListener { languageCode ->
+                if (languageCode == "und") {
+                    _textLanguage.value = "Couldn't identify language."
+                } else {
+                    _textLanguage.value = languageCode
+                }
+                gotLanguage()
+            }
+            .addOnFailureListener {
+                it.printStackTrace()
+            }
     }
 }

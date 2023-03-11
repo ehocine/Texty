@@ -16,6 +16,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -40,6 +41,7 @@ fun ScanScreen(
 ) {
     val context = LocalContext.current
     val scanningState by mainViewModel.scanningStatus.collectAsState()
+    val textLanguage by mainViewModel.textLanguage
     var text by remember { mutableStateOf("") }
 
     LaunchedEffect(key1 = true) {
@@ -47,7 +49,8 @@ fun ScanScreen(
             val scannedText = ScannedText(
                 text = it,
                 imageUri = mainViewModel.localImageUri.value.toString(),
-                scannedTime = System.currentTimeMillis()
+                scannedTime = System.currentTimeMillis(),
+                textLanguage = mainViewModel.textLanguage.value
             )
             text = it
             mainViewModel.addOrRemoveScannedText(
@@ -134,27 +137,31 @@ fun ScanScreen(
                     Title(title = "Scanned text")
                     Spacer(modifier = Modifier.height(16.dp))
                     when (scanningState) {
-                        ScanningStatus.LOADING -> {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                CircularProgressIndicator(color = MaterialTheme.colors.TextColor)
-                            }
-                        }
                         ScanningStatus.LOADED -> {
                             showInterstitial(context)
-                            Text(
-                                text = text,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp, 0.dp, 16.dp, 0.dp),
-                                color = MaterialTheme.colors.TextColor,
-                                style = MaterialTheme.typography.body2,
-                                textAlign = TextAlign.Start
-                            )
+                            Column(Modifier.fillMaxSize()) {
+                                Text(
+                                    text = "Text language: $textLanguage",
+                                    modifier = Modifier
+                                        .padding(16.dp, 0.dp, 0.dp, 0.dp),
+                                    color = MaterialTheme.colors.TextColor,
+                                    style = MaterialTheme.typography.subtitle2,
+                                    fontWeight = FontWeight.W600,
+                                    textAlign = TextAlign.Start
+                                )
+                                Spacer(modifier = Modifier.padding(16.dp))
+                                Text(
+                                    text = text.ifBlank { "Couldn't find any text" },
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(16.dp, 0.dp, 16.dp, 0.dp),
+                                    color = MaterialTheme.colors.TextColor,
+                                    style = MaterialTheme.typography.body2,
+                                    textAlign = TextAlign.Start
+                                )
+                            }
                         }
-                        else -> {
+                        ScanningStatus.ERROR -> {
                             Text(
                                 text = "Something went wrong!",
                                 modifier = Modifier
@@ -164,6 +171,24 @@ fun ScanScreen(
                                 style = MaterialTheme.typography.body2,
                                 textAlign = TextAlign.Start
                             )
+                        }
+                        else -> {
+                            Column(
+                                modifier = Modifier.fillMaxSize(),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Spacer(modifier = Modifier.padding(24.dp))
+                                Text(
+                                    text = "Scanning image...",
+                                    modifier = Modifier
+                                        .fillMaxWidth(),
+                                    color = MaterialTheme.colors.TextColor,
+                                    style = MaterialTheme.typography.body2,
+                                    textAlign = TextAlign.Center
+                                )
+                                Spacer(modifier = Modifier.padding(16.dp))
+                                CircularProgressIndicator(color = MaterialTheme.colors.TextColor)
+                            }
                         }
                     }
                 }
@@ -178,6 +203,7 @@ fun ScanScreen(
                     backgroundColor = MaterialTheme.colors.ButtonColor,
                     contentColor = Color.White
                 ),
+                enabled = scanningState == ScanningStatus.LOADED,
                 onClick = {
                     copyToClipboard(context, text)
                 }) {

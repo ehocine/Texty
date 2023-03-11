@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -156,15 +157,27 @@ fun DetailsScreen(
                         Spacer(modifier = Modifier.height(24.dp))
                         Title(title = "Scanned text")
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = selectedScannedText.text,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp, 0.dp, 16.dp, 0.dp),
-                            color = MaterialTheme.colors.TextColor,
-                            style = MaterialTheme.typography.body2,
-                            textAlign = TextAlign.Start
-                        )
+                        Column(Modifier.fillMaxSize()) {
+                            Text(
+                                text = "Text language: ${selectedScannedText.textLanguage}",
+                                modifier = Modifier
+                                    .padding(16.dp, 0.dp, 0.dp, 0.dp),
+                                color = MaterialTheme.colors.TextColor,
+                                style = MaterialTheme.typography.subtitle2,
+                                fontWeight = FontWeight.W600,
+                                textAlign = TextAlign.Start
+                            )
+                            Spacer(modifier = Modifier.padding(16.dp))
+                            Text(
+                                text = selectedScannedText.text,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp, 0.dp, 16.dp, 0.dp),
+                                color = MaterialTheme.colors.TextColor,
+                                style = MaterialTheme.typography.body2,
+                                textAlign = TextAlign.Start
+                            )
+                        }
                     }
                 }
                 Button(
