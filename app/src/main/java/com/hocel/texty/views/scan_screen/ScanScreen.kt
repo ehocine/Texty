@@ -1,6 +1,7 @@
 package com.hocel.texty.views.scan_screen
 
 import android.annotation.SuppressLint
+import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -8,6 +9,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,6 +27,7 @@ import coil.compose.SubcomposeAsyncImage
 import coil.compose.SubcomposeAsyncImageContent
 import coil.request.ImageRequest
 import com.hocel.texty.R
+import com.hocel.texty.components.DropDownModelOptions
 import com.hocel.texty.components.Title
 import com.hocel.texty.data.models.ScannedText
 import com.hocel.texty.ui.theme.BackgroundColor
@@ -41,30 +44,31 @@ fun ScanScreen(
 ) {
     val context = LocalContext.current
     val scanningState by mainViewModel.scanningStatus.collectAsState()
+    val saveScannedTextState by mainViewModel.saveScannedText.collectAsState()
     val textLanguage by mainViewModel.textLanguage
     var text by remember { mutableStateOf("") }
+    var languageModel by remember { mutableStateOf(RecognitionLanguageModel.Latin) }
+    var scannedText by remember { mutableStateOf(ScannedText()) }
+    var imageScanned by remember { mutableStateOf(false) }
 
-    LaunchedEffect(key1 = true) {
+    val modelOptions = listOf(
+        RecognitionLanguageModel.Latin,
+        RecognitionLanguageModel.Chinese,
+        RecognitionLanguageModel.Japanese,
+        RecognitionLanguageModel.Korean,
+        RecognitionLanguageModel.Devanagari
+    )
+
+    LaunchedEffect(key1 = languageModel) {
         mainViewModel.processImage {
-            val scannedText = ScannedText(
+            scannedText = ScannedText(
                 text = it,
                 imageUri = mainViewModel.localImageUri.value.toString(),
                 scannedTime = System.currentTimeMillis(),
                 textLanguage = mainViewModel.textLanguage.value
             )
             text = it
-            mainViewModel.addOrRemoveScannedText(
-                context = context,
-                action = AddOrRemoveAction.ADD,
-                scannedText = scannedText,
-                onAddSuccess = {
-                    uploadScannedTextImage(
-                        fileUri = mainViewModel.localImageUri.value,
-                        scannedText = scannedText
-                    )
-                },
-                onRemoveSuccess = {}
-            )
+            imageScanned = true
         }
     }
 
@@ -133,8 +137,34 @@ fun ScanScreen(
                     }
                 }
                 item {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Title(title = "Choose an option")
+                        DropDownModelOptions(
+                            optionsList = modelOptions
+                        ) {
+                            imageScanned = false
+                            languageModel = it
+                            mainViewModel.setLanguageModel(it)
+                        }
+                    }
+                }
+                item {
                     Spacer(modifier = Modifier.height(24.dp))
-                    Title(title = "Scanned text")
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Title(title = "Scanned text", modifier = Modifier.weight(9f))
+                        if (scanningState == ScanningStatus.LOADED && text.isNotBlank()) {
+                            IconButton(onClick = {
+                                copyToClipboard(context, text)
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.ContentCopy,
+                                    tint = MaterialTheme.colors.TextColor,
+                                    contentDescription = ""
+                                )
+                            }
+                        }
+                    }
+
                     Spacer(modifier = Modifier.height(16.dp))
                     when (scanningState) {
                         ScanningStatus.LOADED -> {
@@ -151,7 +181,7 @@ fun ScanScreen(
                                 )
                                 Spacer(modifier = Modifier.padding(16.dp))
                                 Text(
-                                    text = text.ifBlank { "Couldn't find any text" },
+                                    text = text.ifBlank { "Couldn't find any text, try another option" },
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(16.dp, 0.dp, 16.dp, 0.dp),
@@ -203,11 +233,35 @@ fun ScanScreen(
                     backgroundColor = MaterialTheme.colors.ButtonColor,
                     contentColor = Color.White
                 ),
-                enabled = scanningState == ScanningStatus.LOADED,
+                enabled = (scanningState == ScanningStatus.LOADED) && text.isNotBlank() && imageScanned && (saveScannedTextState != LoadingState.LOADING),
                 onClick = {
-                    copyToClipboard(context, text)
+                    mainViewModel.setSaveScannedTextState(LoadingState.LOADING)
+                    mainViewModel.addOrRemoveScannedText(
+                        context = context,
+                        action = AddOrRemoveAction.ADD,
+                        scannedText = scannedText,
+                        onAddSuccess = {
+                            uploadScannedTextImage(
+                                fileUri = mainViewModel.localImageUri.value,
+                                scannedText = scannedText
+                            )
+                            mainViewModel.setSaveScannedTextState(LoadingState.LOADED)
+                            "Saved successfully".toast(context, Toast.LENGTH_SHORT)
+                            navController.navigateUp()
+                        },
+                        onRemoveSuccess = {}
+                    )
                 }) {
-                Text(text = "Copy to clipboard")
+                when (saveScannedTextState) {
+                    LoadingState.LOADING -> {
+                        CircularProgressIndicator(color = Color.White)
+                    }
+                    else -> {
+                        Text(
+                            text = "Save the scanned text"
+                        )
+                    }
+                }
             }
         }
     }

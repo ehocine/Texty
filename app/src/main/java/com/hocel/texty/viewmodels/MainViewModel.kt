@@ -3,11 +3,7 @@ package com.hocel.texty.viewmodels
 import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.util.Log
 import android.widget.Toast
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ModalBottomSheetState
-import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
@@ -21,6 +17,10 @@ import com.google.firebase.ktx.Firebase
 import com.google.mlkit.nl.languageid.LanguageIdentification
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.text.TextRecognition
+import com.google.mlkit.vision.text.chinese.ChineseTextRecognizerOptions
+import com.google.mlkit.vision.text.devanagari.DevanagariTextRecognizerOptions
+import com.google.mlkit.vision.text.japanese.JapaneseTextRecognizerOptions
+import com.google.mlkit.vision.text.korean.KoreanTextRecognizerOptions
 import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.hocel.texty.TextyApplication
 import com.hocel.texty.data.models.ScannedText
@@ -45,13 +45,6 @@ class MainViewModel @Inject constructor(
     private val application: TextyApplication
 ) : ViewModel() {
 
-    @OptIn(ExperimentalMaterialApi::class)
-    private val _modalBottomSheetState: MutableState<ModalBottomSheetState> =
-        mutableStateOf(ModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden))
-
-    @OptIn(ExperimentalMaterialApi::class)
-    val modalBottomSheetState: State<ModalBottomSheetState> = _modalBottomSheetState
-
     private var _selectedScannedText: MutableState<ScannedText> = mutableStateOf(
         ScannedText()
     )
@@ -72,6 +65,12 @@ class MainViewModel @Inject constructor(
     private var _gettingData = MutableStateFlow(LoadingState.IDLE)
     var gettingData: StateFlow<LoadingState> = _gettingData
 
+    private var _languageModel: MutableState<RecognitionLanguageModel> =
+        mutableStateOf(RecognitionLanguageModel.Latin)
+
+    private var _saveScannedText = MutableStateFlow(LoadingState.IDLE)
+    var saveScannedText: StateFlow<LoadingState> = _saveScannedText
+
     fun processImage(gotTextAndLanguage: (text: String) -> Unit) {
         viewModelScope.launch {
             try {
@@ -82,15 +81,36 @@ class MainViewModel @Inject constructor(
                     }
                 val image =
                     InputImage.fromBitmap(bitmap!!, determineImageOrientation(_localImageUri.value))
-                val recognizer = TextRecognition.getClient(TextRecognizerOptions.DEFAULT_OPTIONS)
+
+                val recognizer = when (_languageModel.value) {
+                    RecognitionLanguageModel.Chinese -> TextRecognition.getClient(
+                        ChineseTextRecognizerOptions.Builder().build()
+                    )
+                    RecognitionLanguageModel.Devanagari -> TextRecognition.getClient(
+                        DevanagariTextRecognizerOptions.Builder().build()
+                    )
+                    RecognitionLanguageModel.Japanese -> TextRecognition.getClient(
+                        JapaneseTextRecognizerOptions.Builder().build()
+                    )
+                    RecognitionLanguageModel.Korean -> TextRecognition.getClient(
+                        KoreanTextRecognizerOptions.Builder().build()
+                    )
+                    else -> TextRecognition.getClient(
+                        TextRecognizerOptions.DEFAULT_OPTIONS
+                    )
+                }
                 recognizer.process(image)
                     .addOnSuccessListener { visionText ->
                         val resultText = visionText.text
                         if (resultText.isNotEmpty()) {
                             CoroutineScope(Dispatchers.IO).launch {
-                                identifyLanguage(resultText){
+                                identifyLanguage(resultText) {
                                     gotTextAndLanguage(resultText)
                                 }
+                                _scanningStatus.emit(ScanningStatus.LOADED)
+                            }
+                        }else{
+                            CoroutineScope(Dispatchers.IO).launch {
                                 _scanningStatus.emit(ScanningStatus.LOADED)
                             }
                         }
@@ -237,5 +257,15 @@ class MainViewModel @Inject constructor(
             .addOnFailureListener {
                 it.printStackTrace()
             }
+    }
+
+    fun setLanguageModel(model: RecognitionLanguageModel) {
+        _languageModel.value = model
+    }
+
+    fun setSaveScannedTextState(state: LoadingState) {
+        viewModelScope.launch {
+            _saveScannedText.emit(state)
+        }
     }
 }

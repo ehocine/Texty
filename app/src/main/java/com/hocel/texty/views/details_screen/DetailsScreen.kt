@@ -193,7 +193,7 @@ fun DetailsScreen(
                     onClick = {
                         copyToClipboard(context, selectedScannedText.text)
                     }) {
-                    Text(text = "Copy to clipboard")
+                    Text(text = "Copy to clipboard", color = Color.White)
 
                 }
             }

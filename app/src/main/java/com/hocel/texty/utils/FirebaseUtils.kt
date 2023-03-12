@@ -21,6 +21,7 @@ import com.hocel.texty.utils.Constants.LIST_OF_SCANNED_TEXTS
 import com.hocel.texty.utils.Constants.TIMEOUT_IN_MILLIS
 import com.hocel.texty.utils.Constants.auth
 import com.hocel.texty.utils.Constants.loadingState
+import com.hocel.texty.viewmodels.MainViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.tasks.await
 
@@ -222,7 +223,10 @@ fun resendVerificationEmail(
     }
 }
 
-fun uploadScannedTextImage(fileUri: Uri, scannedText: ScannedText) {
+fun uploadScannedTextImage(
+    fileUri: Uri,
+    scannedText: ScannedText
+) {
     CoroutineScope(Dispatchers.IO).launch {
         try {
             // Get current username
@@ -256,7 +260,10 @@ fun uploadScannedTextImage(fileUri: Uri, scannedText: ScannedText) {
 }
 
 
-fun updateScannedTextImage(pictureUri: String, scannedText: ScannedText) {
+fun updateScannedTextImage(
+    pictureUri: String,
+    scannedText: ScannedText
+) {
     val db = Firebase.firestore
     val currentUser = Firebase.auth.currentUser
     CoroutineScope(Dispatchers.IO).launch {

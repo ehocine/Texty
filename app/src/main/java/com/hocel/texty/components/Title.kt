@@ -11,10 +11,10 @@ import androidx.compose.ui.unit.dp
 import com.hocel.texty.ui.theme.TextColor
 
 @Composable
-fun Title(title: String) {
+fun Title(title: String, modifier: Modifier = Modifier) {
     Text(
         text = title,
-        modifier = Modifier
+        modifier = modifier
             .padding(16.dp, 0.dp, 0.dp, 0.dp),
         color = MaterialTheme.colors.TextColor,
         style = MaterialTheme.typography.subtitle1,
