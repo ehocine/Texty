@@ -29,11 +29,9 @@ import com.hocel.texty.navigation.Screens
 import com.hocel.texty.ui.theme.BackgroundColor
 import com.hocel.texty.ui.theme.ButtonColor
 import com.hocel.texty.ui.theme.CircularProgressColor
-import com.hocel.texty.ui.theme.TextColor
 import com.hocel.texty.utils.Constants.loadingState
 import com.hocel.texty.utils.LoadingState
 import com.hocel.texty.utils.registerNewUser
-import com.hocel.texty.viewmodels.MainViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 
 
@@ -192,12 +190,12 @@ fun RegisterPage(
                         Row {
                             Text(
                                 text = stringResource(R.string.have_an_account_login),
-                                fontSize = MaterialTheme.typography.subtitle1.fontSize
+                                fontSize = MaterialTheme.typography.subtitle2.fontSize
                             )
                             Spacer(modifier = Modifier.padding(end = 2.dp))
                             Text(
                                 text = "Login",
-                                fontSize = MaterialTheme.typography.subtitle1.fontSize,
+                                fontSize = MaterialTheme.typography.subtitle2.fontSize,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.clickable {
                                     navController.navigate(route = Screens.Login.route) {

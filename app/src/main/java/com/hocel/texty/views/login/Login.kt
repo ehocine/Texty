@@ -25,28 +25,25 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import com.hocel.texty.R
 import com.hocel.texty.components.LottieAnim
 import com.hocel.texty.navigation.Screens
 import com.hocel.texty.ui.theme.BackgroundColor
 import com.hocel.texty.ui.theme.ButtonColor
-import com.hocel.texty.ui.theme.TextColor
+import com.hocel.texty.ui.theme.CircularProgressColor
 import com.hocel.texty.utils.Constants.auth
 import com.hocel.texty.utils.Constants.loadingState
 import com.hocel.texty.utils.LoadingState
 import com.hocel.texty.utils.resendVerificationEmail
 import com.hocel.texty.utils.signInUser
 import kotlinx.coroutines.flow.MutableStateFlow
-import com.hocel.texty.R
-import com.hocel.texty.ui.theme.CircularProgressColor
 
 
 @Composable
 fun LoginPage(
     navController: NavController
 ) {
-
     val user = auth.currentUser
-
     val context = LocalContext.current
     val focusManager = LocalFocusManager.current
     val scrollState = rememberScrollState()
@@ -217,7 +214,7 @@ fun LoginPage(
                                 )
                                 Spacer(modifier = Modifier.padding(end = 2.dp))
                                 Text(
-                                    text = "Request one",
+                                    text = "Request another one",
                                     fontSize = MaterialTheme.typography.subtitle2.fontSize,
                                     fontWeight = FontWeight.Bold,
                                     modifier = Modifier.clickable {

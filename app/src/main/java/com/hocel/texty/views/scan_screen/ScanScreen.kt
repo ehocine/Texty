@@ -4,8 +4,11 @@ import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -43,6 +46,7 @@ fun ScanScreen(
     mainViewModel: MainViewModel
 ) {
     val context = LocalContext.current
+    val scrollState = rememberScrollState()
     val scanningState by mainViewModel.scanningStatus.collectAsState()
     val saveScannedTextState by mainViewModel.saveScannedText.collectAsState()
     val textLanguage by mainViewModel.textLanguage
@@ -95,105 +99,97 @@ fun ScanScreen(
         }
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
-            LazyColumn(
+            Column(
                 modifier = Modifier
                     .fillMaxSize()
                     .background(color = MaterialTheme.colors.BackgroundColor)
             ) {
-                item {
-                    Box(Modifier.fillMaxWidth()) {
-                        Spacer(modifier = Modifier.height(16.dp))
-                        SubcomposeAsyncImage(
-                            modifier = Modifier
-                                .height(250.dp)
-                                .padding(10.dp, 0.dp, 10.dp, 0.dp)
-                                .fillMaxWidth()
-                                .clip(RectangleShape)
-                                .align(Alignment.TopCenter),
-                            model = ImageRequest.Builder(LocalContext.current)
-                                .data(mainViewModel.localImageUri.value)
-                                .crossfade(true)
-                                .error(R.drawable.no_image)
-                                .build(),
-                            contentDescription = "Image"
-                        ) {
-                            when (painter.state) {
-                                is AsyncImagePainter.State.Loading -> {
-                                    Box(
-                                        Modifier.fillMaxSize(),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        CircularProgressIndicator(color = MaterialTheme.colors.TextColor)
-                                    }
-                                }
-                                else -> {
-                                    SubcomposeAsyncImageContent(
-                                        modifier = Modifier.clip(RectangleShape),
-                                        contentScale = ContentScale.Fit
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-                item {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Title(title = "Choose an option")
-                        DropDownModelOptions(
-                            optionsList = modelOptions
-                        ) {
-                            imageScanned = false
-                            languageModel = it
-                            mainViewModel.setLanguageModel(it)
-                        }
-                    }
-                }
-                item {
-                    Spacer(modifier = Modifier.height(24.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Title(title = "Scanned text", modifier = Modifier.weight(9f))
-                        if (scanningState == ScanningStatus.LOADED && text.isNotBlank()) {
-                            IconButton(onClick = {
-                                copyToClipboard(context, text)
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Default.ContentCopy,
-                                    tint = MaterialTheme.colors.TextColor,
-                                    contentDescription = ""
-                                )
-                            }
-                        }
-                    }
-
+                Box(Modifier.fillMaxWidth()) {
                     Spacer(modifier = Modifier.height(16.dp))
-                    when (scanningState) {
-                        ScanningStatus.LOADED -> {
-                            showInterstitial(context)
-                            Column(Modifier.fillMaxSize()) {
-                                Text(
-                                    text = "Text language: $textLanguage",
-                                    modifier = Modifier
-                                        .padding(16.dp, 0.dp, 0.dp, 0.dp),
-                                    color = MaterialTheme.colors.TextColor,
-                                    style = MaterialTheme.typography.subtitle2,
-                                    fontWeight = FontWeight.W600,
-                                    textAlign = TextAlign.Start
-                                )
-                                Spacer(modifier = Modifier.padding(16.dp))
-                                Text(
-                                    text = text.ifBlank { "Couldn't find any text, try another option" },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(16.dp, 0.dp, 16.dp, 0.dp),
-                                    color = MaterialTheme.colors.TextColor,
-                                    style = MaterialTheme.typography.body2,
-                                    textAlign = TextAlign.Start
+                    SubcomposeAsyncImage(
+                        modifier = Modifier
+                            .height(250.dp)
+                            .padding(10.dp, 0.dp, 10.dp, 0.dp)
+                            .fillMaxWidth()
+                            .clip(RectangleShape)
+                            .align(Alignment.TopCenter),
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(mainViewModel.localImageUri.value)
+                            .crossfade(true)
+                            .error(R.drawable.no_image)
+                            .build(),
+                        contentDescription = "Image"
+                    ) {
+                        when (painter.state) {
+                            is AsyncImagePainter.State.Loading -> {
+                                Box(
+                                    Modifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    CircularProgressIndicator(color = MaterialTheme.colors.TextColor)
+                                }
+                            }
+                            else -> {
+                                SubcomposeAsyncImageContent(
+                                    modifier = Modifier.clip(RectangleShape),
+                                    contentScale = ContentScale.Fit
                                 )
                             }
                         }
-                        ScanningStatus.ERROR -> {
+                    }
+                }
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Title(title = "Choose an option")
+                    DropDownModelOptions(
+                        optionsList = modelOptions
+                    ) {
+                        imageScanned = false
+                        languageModel = it
+                        mainViewModel.setLanguageModel(it)
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(24.dp))
+
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Title(title = "Scanned text", modifier = Modifier.weight(9f))
+                    if (scanningState == ScanningStatus.LOADED && text.isNotBlank()) {
+                        IconButton(onClick = {
+                            copyToClipboard(context, text)
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.ContentCopy,
+                                tint = MaterialTheme.colors.TextColor,
+                                contentDescription = ""
+                            )
+                        }
+                    }
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                when (scanningState) {
+                    ScanningStatus.LOADED -> {
+                        showInterstitial(context)
+                        Column(
+                            Modifier
+                                .fillMaxSize()
+                                .padding(bottom = 80.dp)
+                                .verticalScroll(state = scrollState)
+                        ) {
                             Text(
-                                text = "Something went wrong!",
+                                text = "Text language: $textLanguage",
+                                modifier = Modifier
+                                    .padding(16.dp, 0.dp, 0.dp, 0.dp),
+                                color = MaterialTheme.colors.TextColor,
+                                style = MaterialTheme.typography.subtitle2,
+                                fontWeight = FontWeight.W600,
+                                textAlign = TextAlign.Start
+                            )
+                            Spacer(modifier = Modifier.padding(16.dp))
+                            Text(
+                                text = text.ifBlank { "Couldn't find any text, try another option" },
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(16.dp, 0.dp, 16.dp, 0.dp),
@@ -202,26 +198,38 @@ fun ScanScreen(
                                 textAlign = TextAlign.Start
                             )
                         }
-                        else -> {
-                            Column(
-                                modifier = Modifier.fillMaxSize(),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Spacer(modifier = Modifier.padding(24.dp))
-                                Text(
-                                    text = "Scanning image...",
-                                    modifier = Modifier
-                                        .fillMaxWidth(),
-                                    color = MaterialTheme.colors.TextColor,
-                                    style = MaterialTheme.typography.body2,
-                                    textAlign = TextAlign.Center
-                                )
-                                Spacer(modifier = Modifier.padding(16.dp))
-                                CircularProgressIndicator(color = MaterialTheme.colors.TextColor)
-                            }
+                    }
+                    ScanningStatus.ERROR -> {
+                        Text(
+                            text = "Something went wrong!",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp, 0.dp, 16.dp, 0.dp),
+                            color = MaterialTheme.colors.TextColor,
+                            style = MaterialTheme.typography.body2,
+                            textAlign = TextAlign.Start
+                        )
+                    }
+                    else -> {
+                        Column(
+                            modifier = Modifier.fillMaxSize(),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Spacer(modifier = Modifier.padding(24.dp))
+                            Text(
+                                text = "Scanning image...",
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                color = MaterialTheme.colors.TextColor,
+                                style = MaterialTheme.typography.body2,
+                                textAlign = TextAlign.Center
+                            )
+                            Spacer(modifier = Modifier.padding(16.dp))
+                            CircularProgressIndicator(color = MaterialTheme.colors.TextColor)
                         }
                     }
                 }
+
             }
             Button(
                 modifier = Modifier

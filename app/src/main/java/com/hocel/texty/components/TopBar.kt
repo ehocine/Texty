@@ -1,10 +1,7 @@
 package com.hocel.texty.components
 
 import android.content.Context
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
@@ -14,13 +11,15 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.hocel.texty.ui.theme.TextColor
 import com.hocel.texty.viewmodels.MainViewModel
 
 @Composable
 fun TopBar(
     context: Context,
-    mainViewModel: MainViewModel
+    mainViewModel: MainViewModel,
+    navController: NavController
 ) {
     LaunchedEffect(key1 = true) {
         mainViewModel.getUserInfo(context = context)
@@ -39,6 +38,16 @@ fun TopBar(
                 style = MaterialTheme.typography.h5,
                 color = MaterialTheme.colors.TextColor
             )
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalArrangement = Arrangement.End
+        ) {
+          SignOutDropMenu {
+              mainViewModel.signOut(context = context, navController = navController)
+          }
         }
     }
 }

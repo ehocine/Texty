@@ -4,12 +4,15 @@ import android.content.Context
 import android.graphics.BitmapFactory
 import android.net.Uri
 import android.widget.Toast
+import androidx.compose.material.SnackbarDuration
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.State
 import androidx.compose.runtime.mutableStateOf
 import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.ktx.firestore
@@ -25,9 +28,11 @@ import com.google.mlkit.vision.text.latin.TextRecognizerOptions
 import com.hocel.texty.TextyApplication
 import com.hocel.texty.data.models.ScannedText
 import com.hocel.texty.data.models.User
+import com.hocel.texty.navigation.Screens
 import com.hocel.texty.utils.*
 import com.hocel.texty.utils.Constants.FIRESTORE_USERS_DATABASE
 import com.hocel.texty.utils.Constants.LIST_OF_SCANNED_TEXTS
+import com.hocel.texty.utils.Constants.auth
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -109,7 +114,7 @@ class MainViewModel @Inject constructor(
                                 }
                                 _scanningStatus.emit(ScanningStatus.LOADED)
                             }
-                        }else{
+                        } else {
                             CoroutineScope(Dispatchers.IO).launch {
                                 _scanningStatus.emit(ScanningStatus.LOADED)
                             }
@@ -208,6 +213,24 @@ class MainViewModel @Inject constructor(
             }
         } else {
             "Device is not connected to the internet".toast(context, Toast.LENGTH_SHORT)
+        }
+    }
+
+    fun signOut(
+        context: Context,
+        navController: NavController
+    ) {
+        try {
+            auth.signOut()
+            "Successfully signed out".toast(context, Toast.LENGTH_SHORT)
+            navController.navigate(Screens.Login.route) {
+                popUpTo(navController.graph.findStartDestination().id) {
+                    inclusive = true
+                }
+
+            }
+        } catch (e: Exception) {
+            "An error occurred".toast(context, Toast.LENGTH_SHORT)
         }
     }
 

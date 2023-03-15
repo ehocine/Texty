@@ -12,6 +12,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.ripple.rememberRipple
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -227,6 +229,41 @@ fun DropDownModelOptions(
                     }
                 ) {
                     Text(text = option.toString(), color = MaterialTheme.colors.TextColor)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun SignOutDropMenu(onSignOutClicked: () -> Unit) {
+    var expanded by remember { mutableStateOf(false) }
+    IconButton(onClick = { expanded = true }) {
+        Icon(
+            imageVector = Icons.Default.MoreVert,
+            contentDescription = "Menu",
+            tint = MaterialTheme.colors.TextColor
+        )
+        DropdownMenu(
+            modifier = Modifier.background(MaterialTheme.colors.BackgroundColor),
+            expanded = expanded,
+            onDismissRequest = { expanded = false }) {
+            DropdownMenuItem(onClick = {
+                expanded = false
+                onSignOutClicked()
+            }) {
+                Row(Modifier.fillMaxWidth()) {
+                    Icon(
+                        imageVector = Icons.Default.Logout,
+                        contentDescription = "Sign out",
+                        tint = MaterialTheme.colors.TextColor
+                    )
+                    Spacer(modifier = Modifier.padding(5.dp))
+                    Text(
+                        text = "Sign out",
+                        modifier = Modifier.padding(start = 5.dp),
+                        color = MaterialTheme.colors.TextColor
+                    )
                 }
             }
         }

@@ -5,7 +5,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -47,6 +49,7 @@ fun DetailsScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val scrollState = rememberScrollState()
     val selectedScannedText by mainViewModel.selectedScannedText
     val deleteModalBottomSheetState =
         rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
@@ -112,62 +115,67 @@ fun DetailsScreen(
         ) {
             Box(modifier = Modifier.fillMaxSize()) {
                 showInterstitial(context)
-                LazyColumn(
+
+                Column(
                     modifier = Modifier
                         .fillMaxSize()
                         .background(color = MaterialTheme.colors.BackgroundColor)
                 ) {
-                    item {
-                        Box(Modifier.fillMaxWidth()) {
-                            Spacer(modifier = Modifier.height(16.dp))
-                            SubcomposeAsyncImage(
-                                modifier = Modifier
-                                    .padding(10.dp, 0.dp, 10.dp, 0.dp)
-                                    .height(250.dp)
-                                    .fillMaxWidth()
-                                    .clip(RectangleShape)
-                                    .align(Alignment.TopCenter),
-                                model = ImageRequest.Builder(LocalContext.current)
-                                    .data(selectedScannedText.imageUri)
-                                    .crossfade(true)
-                                    .error(R.drawable.no_image)
-                                    .build(),
-                                contentDescription = "Image"
-                            ) {
-                                when (painter.state) {
-                                    is AsyncImagePainter.State.Loading -> {
-                                        Box(
-                                            Modifier.fillMaxSize(),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            CircularProgressIndicator(color = MaterialTheme.colors.TextColor)
-                                        }
+                    Box(Modifier.fillMaxWidth()) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        SubcomposeAsyncImage(
+                            modifier = Modifier
+                                .padding(10.dp, 0.dp, 10.dp, 0.dp)
+                                .height(250.dp)
+                                .fillMaxWidth()
+                                .clip(RectangleShape)
+                                .align(Alignment.TopCenter),
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(selectedScannedText.imageUri)
+                                .crossfade(true)
+                                .error(R.drawable.no_image)
+                                .build(),
+                            contentDescription = "Image"
+                        ) {
+                            when (painter.state) {
+                                is AsyncImagePainter.State.Loading -> {
+                                    Box(
+                                        Modifier.fillMaxSize(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator(color = MaterialTheme.colors.TextColor)
                                     }
-                                    else -> {
-                                        SubcomposeAsyncImageContent(
-                                            modifier = Modifier.clip(RectangleShape),
-                                            contentScale = ContentScale.Fit
-                                        )
-                                    }
+                                }
+                                else -> {
+                                    SubcomposeAsyncImageContent(
+                                        modifier = Modifier.clip(RectangleShape),
+                                        contentScale = ContentScale.Fit
+                                    )
                                 }
                             }
                         }
                     }
-                    item {
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Title(title = "Scanned text")
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Column(Modifier.fillMaxSize()) {
-                            Text(
-                                text = "Text language: ${selectedScannedText.textLanguage}",
-                                modifier = Modifier
-                                    .padding(16.dp, 0.dp, 0.dp, 0.dp),
-                                color = MaterialTheme.colors.TextColor,
-                                style = MaterialTheme.typography.subtitle2,
-                                fontWeight = FontWeight.W600,
-                                textAlign = TextAlign.Start
-                            )
-                            Spacer(modifier = Modifier.padding(16.dp))
+                    Spacer(modifier = Modifier.height(24.dp))
+                    Title(title = "Scanned text")
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Column(Modifier.fillMaxSize()) {
+                        Text(
+                            text = "Text language: ${selectedScannedText.textLanguage}",
+                            modifier = Modifier
+                                .padding(16.dp, 0.dp, 0.dp, 0.dp),
+                            color = MaterialTheme.colors.TextColor,
+                            style = MaterialTheme.typography.subtitle2,
+                            fontWeight = FontWeight.W600,
+                            textAlign = TextAlign.Start
+                        )
+                        Spacer(modifier = Modifier.padding(16.dp))
+                        Column(
+                            Modifier
+                                .fillMaxSize()
+                                .padding(bottom = 80.dp)
+                                .verticalScroll(state = scrollState)
+                        ) {
+                            showInterstitial(context)
                             Text(
                                 text = selectedScannedText.text,
                                 modifier = Modifier
@@ -193,7 +201,7 @@ fun DetailsScreen(
                     onClick = {
                         copyToClipboard(context, selectedScannedText.text)
                     }) {
-                    Text(text = "Copy to clipboard", color = Color.White)
+                    Text(text = "Copy to clipboard")
 
                 }
             }

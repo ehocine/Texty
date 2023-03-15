@@ -22,7 +22,6 @@ import com.hocel.texty.navigation.Screens
 import com.hocel.texty.ui.theme.BackgroundColor
 import com.hocel.texty.ui.theme.ButtonColor
 import com.hocel.texty.ui.theme.CircularProgressColor
-import com.hocel.texty.ui.theme.TextColor
 import com.hocel.texty.utils.Constants.loadingState
 import com.hocel.texty.utils.LoadingState
 import com.hocel.texty.utils.resetUserPassword

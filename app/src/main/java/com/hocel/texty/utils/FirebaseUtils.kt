@@ -21,7 +21,6 @@ import com.hocel.texty.utils.Constants.LIST_OF_SCANNED_TEXTS
 import com.hocel.texty.utils.Constants.TIMEOUT_IN_MILLIS
 import com.hocel.texty.utils.Constants.auth
 import com.hocel.texty.utils.Constants.loadingState
-import com.hocel.texty.viewmodels.MainViewModel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.tasks.await
 

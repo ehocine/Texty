@@ -123,8 +123,16 @@ fun HomeScreen(
             }
         ) {
             Surface(Modifier.fillMaxSize(), color = MaterialTheme.colors.BackgroundColor) {
-                Column(Modifier.fillMaxSize().padding(bottom = 50.dp)) {
-                    TopBar(context = context, mainViewModel = mainViewModel)
+                Column(
+                    Modifier
+                        .fillMaxSize()
+                        .padding(bottom = 50.dp)
+                ) {
+                    TopBar(
+                        context = context,
+                        mainViewModel = mainViewModel,
+                        navController = navController
+                    )
                     Spacer(modifier = Modifier.height(8.dp))
                     when (state) {
                         LoadingState.LOADING -> LoadingList()
