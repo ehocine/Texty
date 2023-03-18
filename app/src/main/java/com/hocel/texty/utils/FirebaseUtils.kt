@@ -124,10 +124,6 @@ fun signInUser(
                     loadingState.emit(LoadingState.ERROR)
                     withContext(Dispatchers.Main) {
                         Log.d("Tag", "Sign in: ${e.message}")
-//                        snackbar(
-//                            "${e.message}",
-//                            SnackbarDuration.Short
-//                        )
                     }
                 }
             }
@@ -186,10 +182,6 @@ fun resetUserPassword(
                     loadingState.emit(LoadingState.ERROR)
                     withContext(Dispatchers.Main) {
                         Log.d("Tag", "Reset: ${e.message}")
-//                        snackbar(
-//                            e.message.toString(),
-//                            SnackbarDuration.Short
-//                        )
                     }
                 }
             }
@@ -235,7 +227,6 @@ fun uploadScannedTextImage(
             val storageRef = Firebase.storage.reference
 
             val profileRef =
-//                currentUser?.let { storageRef.child("${it.uid}/scannedTexts/${fileUri.lastPathSegment}") }
                 currentUser?.let { storageRef.child("${it.uid}/scannedTexts/${scannedText.scannedTime}") }
 
             // Upload file
@@ -293,7 +284,6 @@ fun deleteImageFromStorage(scannedText: ScannedText) {
             val storageRef = Firebase.storage.reference
 
             val profileRef =
-//                currentUser?.let { storageRef.child("${it.uid}/scannedTexts/${fileUri.lastPathSegment}") }
                 currentUser?.let { storageRef.child("${it.uid}/scannedTexts/${scannedText.scannedTime}") }
 
             // Delete file
